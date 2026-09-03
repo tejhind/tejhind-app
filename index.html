@@ -1,0 +1,913 @@
+```html
+<!DOCTYPE html>
+<html lang="hi" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>तेज़ हिन्द - Tej Hind News App</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fff1f1',
+              100: '#ffe1e1',
+              500: '#e53e3e',
+              600: '#dc2626',
+              700: '#b91c1c',
+              800: '#991b1b',
+              900: '#7f1d1d',
+            }
+          },
+          fontFamily: {
+            hindi: ['"Noto Sans Devanagari"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Noto Sans Devanagari -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Noto Sans Devanagari', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    /* क्षैतिज स्क्रॉलबार छिपाने के लिए */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* टिकर एनीमेशन */
+    @keyframes marquee {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    .animate-ticker {
+      display: inline-block;
+      white-space: nowrap;
+      animation: marquee 25s linear infinite;
+    }
+    .animate-ticker:hover {
+      animation-play-state: paused;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-slate-900 text-gray-800 dark:text-gray-100 min-h-full flex flex-col antialiased transition-colors duration-200">
+
+  <!-- शीर्ष हेडर (Top Bar) -->
+  <header class="sticky top-0 z-40 bg-white dark:bg-slate-800 shadow-md border-b border-gray-200 dark:border-slate-700">
+    <div class="max-w-md mx-auto px-4 py-2.5 flex items-center justify-between">
+      <!-- लोगो और ब्रांड -->
+      <div class="flex items-center space-x-2 space-x-reverse cursor-pointer" onclick="switchTab('home')">
+        <div class="w-9 h-9 bg-brand-600 rounded-lg flex items-center justify-center shadow-lg text-white font-black text-lg tracking-wider">
+          त
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-xl font-extrabold text-brand-600 tracking-tight">तेज़ हिन्द</span>
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300 animate-pulse">
+              LIVE
+            </span>
+          </div>
+          <p class="text-[10px] text-gray-500 dark:text-gray-400 -mt-1 font-medium tracking-wide">tejhind.com • सच सबसे पहले</p>
+        </div>
+      </div>
+
+      <!-- हेडर एक्शन आइकन्स -->
+      <div class="flex items-center space-x-1.5">
+        <!-- सर्च बटन -->
+        <button onclick="toggleSearchBar()" aria-label="सर्च करें" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </button>
+
+        <!-- डार्क मोड टॉगल -->
+        <button onclick="toggleDarkMode()" aria-label="डार्क मोड" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full transition">
+          <svg id="themeIconSun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+          <svg id="themeIconMoon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
+        </button>
+
+        <!-- नोटिफिकेशन घंटी -->
+        <button onclick="showToast('कोई नया नोटिफिकेशन नहीं है')" aria-label="नोटिफिकेशन" class="relative p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+          <span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-brand-600 rounded-full ring-2 ring-white dark:ring-slate-800"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- सर्च बार कंटेनर (Hidden By Default) -->
+    <div id="searchBarContainer" class="hidden max-w-md mx-auto px-4 pb-2">
+      <div class="relative">
+        <input 
+          id="searchInput"
+          type="text" 
+          placeholder="समाचार खोजें..." 
+          oninput="handleSearch(this.value)"
+          class="w-full bg-gray-100 dark:bg-slate-700/70 text-gray-800 dark:text-gray-100 text-sm rounded-xl py-2 pl-9 pr-4 focus:outline-none focus:ring-2 focus:ring-brand-500 border border-gray-200 dark:border-slate-600"
+        >
+        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ब्रेकिंग न्यूज़ टिकर -->
+    <div class="bg-red-600 text-white text-xs font-semibold py-1.5 px-3 flex items-center shadow-inner overflow-hidden">
+      <div class="flex items-center shrink-0 bg-red-800 px-2 py-0.5 rounded text-[11px] font-bold mr-2 uppercase tracking-wide">
+        🔴 ब्रेकिंग
+      </div>
+      <div class="overflow-hidden relative w-full">
+        <div class="animate-ticker cursor-pointer" onclick="openStory(1)">
+          तेज़ हिन्द विशेष: देश भर के मौसम में बड़ा बदलाव, कई राज्यों में भारी बारिश का अलर्ट | शेयर बाज़ार ने बनाया नया रिकॉर्ड | चंद्रयान मिशन पर नया अपडेट...
+        </div>
+      </div>
+    </div>
+
+    <!-- कैटेगरी बार (Horizontal Scroll) -->
+    <div class="max-w-md mx-auto px-3 py-2 overflow-x-auto no-scrollbar flex space-x-2 border-t border-gray-100 dark:border-slate-700/50">
+      <button onclick="filterCategory('सभी')" class="category-btn active shrink-0 px-3.5 py-1 text-xs font-semibold rounded-full bg-brand-600 text-white transition-all">
+        सभी
+      </button>
+      <button onclick="filterCategory('देश')" class="category-btn shrink-0 px-3.5 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 transition-all">
+        🇮🇳 देश
+      </button>
+      <button onclick="filterCategory('राजनीति')" class="category-btn shrink-0 px-3.5 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 transition-all">
+        🏛️ राजनीति
+      </button>
+      <button onclick="filterCategory('व्यापार')" class="category-btn shrink-0 px-3.5 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 transition-all">
+        📈 बिज़नेस
+      </button>
+      <button onclick="filterCategory('खेल')" class="category-btn shrink-0 px-3.5 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 transition-all">
+        🏏 खेल
+      </button>
+      <button onclick="filterCategory('मनोरंजन')" class="category-btn shrink-0 px-3.5 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 transition-all">
+        🎬 सिनेमा
+      </button>
+      <button onclick="filterCategory('तकनीक')" class="category-btn shrink-0 px-3.5 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 transition-all">
+        📱 गैजेट्स
+      </button>
+    </div>
+  </header>
+
+  <!-- मुख्य कंटेंट एरिया -->
+  <main class="max-w-md w-full mx-auto flex-1 pb-24 px-3 pt-3">
+    
+    <!-- ऐप इंस्टॉल बैनर (PWA Prompt) -->
+    <div id="pwaBanner" class="mb-3 bg-gradient-to-r from-red-600 to-amber-600 text-white rounded-2xl p-3.5 shadow-md flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center font-bold text-lg">
+          📱
+        </div>
+        <div>
+          <h4 class="font-bold text-xs leading-tight">तेज़ हिन्द ऐप डाउनलोड करें</h4>
+          <p class="text-[11px] text-white/90">तेज़, आसान और सीधे आपकी स्क्रीन पर</p>
+        </div>
+      </div>
+      <button onclick="installAppPrompt()" class="bg-white text-brand-700 text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-red-50 transition active:scale-95">
+        इंस्टॉल
+      </button>
+    </div>
+
+    <!-- टैब 1: होम फ़ीड (Home Tab) -->
+    <section id="tabHome" class="space-y-4">
+      
+      <!-- टॉप बड़ी स्टोरी (Featured Story) -->
+      <div id="featuredStoryCard" class="cursor-pointer group bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm border border-gray-200/70 dark:border-slate-700" onclick="openStory(1)">
+        <div class="relative h-48 bg-gray-300 dark:bg-slate-700 overflow-hidden">
+          <img 
+            id="featuredImage"
+            src="https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=800&auto=format&fit=crop&q=80" 
+            alt="मुख्य समाचार"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="lazy"
+          >
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+          <span class="absolute top-3 left-3 bg-brand-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-full uppercase shadow">
+            प्रमुख खबर
+          </span>
+          <div class="absolute bottom-3 left-3 right-3 text-white">
+            <span class="text-[11px] text-amber-300 font-semibold">🏛️ संसद विशेष • 10 मिनट पहले</span>
+            <h2 id="featuredTitle" class="text-base font-bold leading-snug mt-1 drop-shadow">
+              संसद का विशेष सत्र: कई अहम विधेयकों पर चर्चा, विपक्ष और सत्ता पक्ष के बीच तीखी बहस
+            </h2>
+          </div>
+        </div>
+        <div class="p-3.5 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+          <span class="flex items-center gap-1">
+            <svg class="w-4 h-4 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            2.4k पढ़े
+          </span>
+          <div class="flex items-center gap-3">
+            <button onclick="event.stopPropagation(); toggleBookmark(1)" class="hover:text-brand-600 transition" aria-label="बुकमार्क">
+              <svg id="bm-icon-1" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+            </button>
+            <button onclick="event.stopPropagation(); shareStory(1)" class="hover:text-brand-600 transition" aria-label="शेयर">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- अन्य खबरों की सूची -->
+      <div id="newsList" class="space-y-3">
+        <!-- डायनामिक रूप से जेएस द्वारा भरा जाएगा -->
+      </div>
+
+      <!-- लोड मोर बटन -->
+      <div class="text-center pt-2">
+        <button onclick="loadMoreNews()" class="w-full py-2.5 bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 font-bold text-xs rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 hover:bg-gray-50 active:scale-98 transition">
+          और समाचार लोड करें +
+        </button>
+      </div>
+    </section>
+
+    <!-- टैब 2: वीडियो बुलेटिन (Videos / Reels Tab) -->
+    <section id="tabVideos" class="hidden space-y-4">
+      <div class="flex items-center justify-between pb-1">
+        <h3 class="font-bold text-sm text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+          <span class="text-red-600">📹</span> तेज़ वीडियो बुलेटिन
+        </h3>
+        <span class="text-[11px] text-gray-500">2 मिनट में सभी अपडेट</span>
+      </div>
+
+      <!-- वीडियो कार्ड 1 -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-700 shadow-sm">
+        <div class="relative h-52 bg-slate-900 flex items-center justify-center">
+          <img src="https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=700&auto=format&fit=crop&q=80" alt="Video cover" class="w-full h-full object-cover opacity-75">
+          <button onclick="showToast('वीडियो प्लेयर शुरू हो रहा है...')" class="absolute w-14 h-14 bg-red-600/90 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition">
+            <svg class="w-6 h-6 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <span class="absolute bottom-2 right-2 bg-black/80 text-white text-[10px] px-2 py-0.5 rounded font-mono">03:15</span>
+        </div>
+        <div class="p-3.5">
+          <h4 class="font-bold text-sm leading-snug">आज की 25 बड़ी खबरें: सुबह से शाम तक का पूरा घटनाक्रम एक नज़र में</h4>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">तेज़ हिन्द डिजिटल डेस्क • 45 मिनट पहले</p>
+        </div>
+      </div>
+
+      <!-- वीडियो कार्ड 2 -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border border-gray-200 dark:border-slate-700 shadow-sm">
+        <div class="relative h-52 bg-slate-900 flex items-center justify-center">
+          <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=700&auto=format&fit=crop&q=80" alt="Sports video" class="w-full h-full object-cover opacity-75">
+          <button onclick="showToast('वीडियो प्लेयर शुरू हो रहा है...')" class="absolute w-14 h-14 bg-red-600/90 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition">
+            <svg class="w-6 h-6 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <span class="absolute bottom-2 right-2 bg-black/80 text-white text-[10px] px-2 py-0.5 rounded font-mono">01:45</span>
+        </div>
+        <div class="p-3.5">
+          <h4 class="font-bold text-sm leading-snug">टी20 वर्ल्ड कप की तैयारी: भारतीय टीम के अंतिम 11 खिलाड़ियों पर बड़ी घोषणा</h4>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">खेल डेस्क • 2 घंटे पहले</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- टैब 3: ई-पेपर / लाइव टीवी (E-Paper & Live Tab) -->
+    <section id="tabEPaper" class="hidden space-y-4">
+      <div class="bg-gradient-to-r from-red-900 to-slate-900 rounded-2xl p-4 text-white shadow-lg">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded">24x7 STREAM</span>
+            <h3 class="font-bold text-base mt-1">तेज़ हिन्द लाइव टीवी</h3>
+            <p class="text-xs text-gray-300">सीधा प्रसारण: देश-दुनिया की पल-पल की हलचल</p>
+          </div>
+          <div class="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center text-xl animate-pulse">
+            📺
+          </div>
+        </div>
+        <button onclick="showToast('लाइव टीवी स्ट्रीम शुरू की जा रही है...')" class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          लाइव प्रसारण देखें
+        </button>
+      </div>
+
+      <!-- दैनिक ई-पेपर संस्करण -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-gray-200 dark:border-slate-700">
+        <div class="flex justify-between items-center mb-3">
+          <h4 class="font-bold text-sm">📰 आज का ई-पेपर</h4>
+          <span class="text-xs text-gray-500">आज का संस्करण</span>
+        </div>
+        <div class="p-4 border-2 border-dashed border-gray-200 dark:border-slate-700 rounded-xl text-center bg-gray-50 dark:bg-slate-850">
+          <div class="text-3xl mb-2">🗞️</div>
+          <h5 class="font-bold text-sm text-gray-800 dark:text-gray-200">तेज़ हिन्द दैनिक ई-पेपर (PDF)</h5>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">सभी प्रमुख पृष्ठ, संपादकीय और क्षेत्रीय संस्करण</p>
+          <button onclick="showToast('ई-पेपर डाउनलोड शुरू हुआ...')" class="mt-3 inline-flex items-center gap-1.5 bg-brand-600 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-brand-700 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            ई-पेपर पढ़ें / डाउनलोड करें
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- टैब 4: बुकमार्क (Saved Stories Tab) -->
+    <section id="tabSaved" class="hidden space-y-4">
+      <div class="flex items-center justify-between pb-1">
+        <h3 class="font-bold text-sm text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+          <span>🔖</span> आपके सहेजे गए लेख
+        </h3>
+        <button onclick="clearBookmarks()" class="text-xs text-red-600 hover:underline">सभी हटाएं</button>
+      </div>
+
+      <div id="savedNewsList" class="space-y-3">
+        <!-- बुकमार्क किए गए समाचार यहाँ दिखेंगे -->
+      </div>
+    </section>
+
+    <!-- टैब 5: मेन्यू / सेटिंग्स (Menu & Settings Tab) -->
+    <section id="tabMenu" class="hidden space-y-4">
+      <!-- प्रोफ़ाइल / अबाउट कार्ड -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-gray-200 dark:border-slate-700 text-center">
+        <div class="w-16 h-16 bg-brand-600 text-white rounded-2xl flex items-center justify-center font-extrabold text-3xl mx-auto shadow-md">
+          त
+        </div>
+        <h3 class="font-extrabold text-base mt-2">तेज़ हिन्द (Tej Hind)</h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400">आधिकारिक न्यूज़ वेब ऐप • तेज और निष्पक्ष पत्रकारिता</p>
+        <div class="mt-3 flex justify-center gap-2 text-xs">
+          <a href="https://tejhind.com" target="_blank" class="px-3 py-1 bg-gray-100 dark:bg-slate-700 rounded-full font-medium text-brand-600 dark:text-brand-400">
+            🌐 tejhind.com
+          </a>
+          <span class="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300 rounded-full font-medium">
+            v2.4 (नवीनतम)
+          </span>
+        </div>
+      </div>
+
+      <!-- ऐप सेटिंग्स -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-gray-200 dark:border-slate-700 space-y-3">
+        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">सेटिंग्स</h4>
+        
+        <div class="flex items-center justify-between py-1">
+          <div>
+            <p class="text-xs font-bold">टेक्स्ट का आकार (फ़ॉन्ट साइज़)</p>
+            <p class="text-[11px] text-gray-500">खबरें पढ़ने का आरामदायक आकार</p>
+          </div>
+          <div class="flex items-center gap-1 bg-gray-100 dark:bg-slate-700 rounded-lg p-1">
+            <button onclick="setFontSize('sm')" class="px-2 py-0.5 text-xs rounded hover:bg-white dark:hover:bg-slate-600">छोटा</button>
+            <button onclick="setFontSize('md')" class="px-2 py-0.5 text-xs rounded bg-white dark:bg-slate-600 font-bold shadow-sm">मध्यम</button>
+            <button onclick="setFontSize('lg')" class="px-2 py-0.5 text-xs rounded hover:bg-white dark:hover:bg-slate-600">बड़ा</button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between py-1 border-t border-gray-100 dark:border-slate-700/60">
+          <div>
+            <p class="text-xs font-bold">ब्रेकिंग अलर्ट नोटिफिकेशन</p>
+            <p class="text-[11px] text-gray-500">ताज़ा खबरों की तुरंत सूचना प्राप्त करें</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" checked class="sr-only peer" onchange="showToast(this.checked ? 'नोटिफिकेशन चालू किया गया' : 'नोटिफिकेशन बंद किया गया')">
+            <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-brand-600"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- संपर्क और सोशल लिंक -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-gray-200 dark:border-slate-700 space-y-2.5">
+        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">हमसे जुड़ें</h4>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="showToast('WhatsApp चैनल पर जुड़ें')" class="p-2.5 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-300 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border border-green-200 dark:border-green-900">
+            💬 व्हाट्सएप चैनल
+          </button>
+          <button onclick="showToast('Telegram पर जुड़ें')" class="p-2.5 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border border-blue-200 dark:border-blue-900">
+            ✈️ टेलीग्राम
+          </button>
+        </div>
+      </div>
+
+      <!-- फ़ुटर कॉपीराइट -->
+      <div class="text-center text-[11px] text-gray-400 py-2">
+        © 2026 tejhind.com • सर्वाधिकार सुरक्षित
+      </div>
+    </section>
+
+  </main>
+
+  <!-- फ़ुल आर्टिकल रीडर मोडल (Article Detail Modal) -->
+  <div id="articleModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-end sm:items-center justify-center transition-opacity">
+    <div class="bg-white dark:bg-slate-800 w-full max-w-lg max-h-[92vh] rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col shadow-2xl">
+      
+      <!-- मोडल हेडर -->
+      <div class="px-4 py-3 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between bg-white dark:bg-slate-800 sticky top-0 z-10">
+        <div class="flex items-center gap-2">
+          <span id="modalCategory" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300">
+            राजनीति
+          </span>
+          <span id="modalTime" class="text-[11px] text-gray-500">15 मिनट पहले</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <!-- टेक्स्ट टू स्पीच (ऑडियो से सुनें) -->
+          <button onclick="toggleAudioRead()" id="audioReadBtn" title="खबर सुनें" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full">
+            <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+          </button>
+          <!-- शेयर -->
+          <button onclick="shareCurrentModalStory()" title="शेयर करें" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+          </button>
+          <!-- बंद करें -->
+          <button onclick="closeModal()" title="बंद करें" class="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- मोडल स्क्रॉल करने योग्य बॉडी -->
+      <div class="overflow-y-auto p-4 space-y-3.5 flex-1">
+        <h2 id="modalTitle" class="text-lg sm:text-xl font-bold leading-snug text-gray-900 dark:text-white">
+          शीर्षक लोड हो रहा है...
+        </h2>
+
+        <div class="h-56 w-full rounded-2xl overflow-hidden bg-gray-200 dark:bg-slate-700">
+          <img id="modalImage" src="" alt="News banner" class="w-full h-full object-cover">
+        </div>
+
+        <div id="modalContent" class="text-sm sm:text-base leading-relaxed text-gray-700 dark:text-gray-300 space-y-3 font-normal">
+          <!-- विस्तृत लेख सामग्री -->
+        </div>
+
+        <!-- शेयर एवं प्रतिक्रिया सेक्शन -->
+        <div class="pt-4 border-t border-gray-100 dark:border-slate-700/60 flex items-center justify-between">
+          <span class="text-xs text-gray-400 font-medium">स्रोत: तेज हिन्द ब्यूरो • tejhind.com</span>
+          <button onclick="shareViaWhatsApp()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-green-600 text-white text-xs font-bold hover:bg-green-700 transition">
+            <span>व्हाट्सएप पर भेजें</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- नीचे का नेविगेशन बार (Bottom Navigation Bar) -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 shadow-lg">
+    <div class="max-w-md mx-auto px-2 flex justify-around items-center h-16">
+      
+      <!-- होम बटन -->
+      <button onclick="switchTab('home')" class="nav-item active flex flex-col items-center justify-center flex-1 text-brand-600 dark:text-brand-400 transition" id="navHome">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span class="text-[10px] font-semibold mt-1">होम</span>
+      </button>
+
+      <!-- वीडियो बटन -->
+      <button onclick="switchTab('videos')" class="nav-item flex flex-col items-center justify-center flex-1 text-gray-500 dark:text-gray-400 transition" id="navVideos">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span class="text-[10px] font-medium mt-1">वीडियो</span>
+      </button>
+
+      <!-- ई-पेपर / लाइव बटन -->
+      <button onclick="switchTab('epaper')" class="nav-item flex flex-col items-center justify-center flex-1 text-gray-500 dark:text-gray-400 transition" id="navEPaper">
+        <div class="relative">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+          <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-600 rounded-full animate-ping"></span>
+        </div>
+        <span class="text-[10px] font-medium mt-1">ई-पेपर/लाइव</span>
+      </button>
+
+      <!-- सहेजे गए लेख (Bookmarks) -->
+      <button onclick="switchTab('saved')" class="nav-item flex flex-col items-center justify-center flex-1 text-gray-500 dark:text-gray-400 transition" id="navSaved">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/></svg>
+        <span class="text-[10px] font-medium mt-1">सुरक्षित</span>
+      </button>
+
+      <!-- मेन्यू / प्रोफाइल -->
+      <button onclick="switchTab('menu')" class="nav-item flex flex-col items-center justify-center flex-1 text-gray-500 dark:text-gray-400 transition" id="navMenu">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <span class="text-[10px] font-medium mt-1">मेन्यू</span>
+      </button>
+
+    </div>
+  </nav>
+
+  <!-- टोस्ट नोटिफिकेशन मैसेज बॉक्स (In-App Toast) -->
+  <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-gray-900/90 text-white text-xs px-4 py-2.5 rounded-full shadow-lg pointer-events-none transition-all duration-300 opacity-0 transform translate-y-3">
+    संदेश यहाँ दिखेगा
+  </div>
+
+  <!-- जावास्क्रिप्ट कार्यप्रणाली -->
+  <script>
+    // न्यूज़ डेटाबेस (Tej Hind समाचार डेटा)
+    const newsData = [
+      {
+        id: 1,
+        title: "संसद का विशेष सत्र: कई अहम विधेयकों पर चर्चा, पक्ष और विपक्ष के बीच तीखी बहस",
+        summary: "संसद के आज के सत्र में कई महत्वपूर्ण आर्थिक और लोक कल्याणकारी विधेयकों को पटल पर रखा गया।",
+        content: `संसद के विशेष सत्र के दौरान आज विभिन्न लोकहितैषी मुद्दों पर गर्मागर्म चर्चा हुई। सरकार ने स्पष्ट किया कि विकास की गति को तेज करने और आम जनता तक जनकल्याणकारी योजनाओं का लाभ सुनिश्चित करने के लिए नए सुधार आवश्यक हैं। \n\nवहीं विपक्ष ने बेरोजगारी, महंगाई और क्षेत्रीय विकास को लेकर कई सवाल उठाए। सत्र के दौरान दोनों सदनों में गहन मंथन देखा गया। विशेषज्ञों का मानना है कि यह सत्र आगामी नीतिगत फैसलों के लिए अत्यंत निर्णायक साबित होगा। तेज हिन्द की टीम संसद भवन से पल-पल की जानकारी आप तक पहुंचा रही है।`,
+        category: "राजनीति",
+        time: "12 मिनट पहले",
+        image: "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=800&auto=format&fit=crop&q=80",
+        reads: "4.2k"
+      },
+      {
+        id: 2,
+        title: "भारतीय शेयर बाज़ार में ऐतिहासिक उछाल, सेंसेक्स और निफ्टी ने छुआ नया शिखर",
+        summary: "ग्लोबल मार्केट से मिले मजबूत संकेतों और विदेशी निवेशकों की भारी लिवाली के चलते बाज़ार में जबर्दस्त तेजी रही।",
+        content: `हफ्ते के पहले कारोबारी दिन भारतीय शेयर बाज़ार ने नया इतिहास रच दिया। सेंसेक्स में लगभग 700 अंकों की तेजी दर्ज की गई, जबकि निफ्टी भी नए रिकॉर्ड स्तर पर बंद हुआ। \n\nबैंकिंग, आईटी और ऑटोमोबाइल सेक्टर के शेयरों में सबसे ज्यादा खरीदारी देखी गई। बाज़ार विश्लेषकों का कहना है कि भारत की मजबूत जीडीपी ग्रोथ और कंपनियों के बेहतर तिमाही नतीजों से निवेशकों का भरोसा और मजबूत हुआ है।`,
+        category: "व्यापार",
+        time: "35 मिनट पहले",
+        image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&auto=format&fit=crop&q=80",
+        reads: "2.8k"
+      },
+      {
+        id: 3,
+        title: "मौसम विभाग की चेतावनी: अगले 48 घंटों में उत्तर भारत में मूसलाधार बारिश की संभावना",
+        summary: "पश्चिमी विक्षोभ के सक्रिय होने के कारण कई राज्यों में ऑरेंज अलर्ट जारी, किसानों को सतर्क रहने की सलाह।",
+        content: `मौसम विभाग (IMD) ने ताजा बुलेटिन जारी कर चेतावनी दी है कि अगले दो दिनों में पहाड़ों से लेकर मैदानी इलाकों तक भारी से बहुत भारी बारिश हो सकती है। \n\nहिमाचल, उत्तराखंड, पंजाब, हरियाणा और पश्चिमी उत्तर प्रदेश में तेज हवाओं के साथ बारिश और ओलावृष्टि की संभावना जताई गई है। प्रशासन ने आपातकालीन सेवाओं को अलर्ट मोड पर रखा है और स्थानीय लोगों को अनावश्यक यात्रा से बचने की सलाह दी गई है।`,
+        category: "देश",
+        time: "1 घंटा पहले",
+        image: "https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?w=800&auto=format&fit=crop&q=80",
+        reads: "3.5k"
+      },
+      {
+        id: 4,
+        title: "टीम इंडिया का विजयी अभियान जारी: रोमांचक मुकाबले में अंतिम ओवर में दर्ज की जीत",
+        summary: "अंतिम गेंद तक चले सांस रोक देने वाले मैच में भारतीय गेंदबाजों और बल्लेबाजों का शानदार प्रदर्शन।",
+        content: `रोमांच से भरपूर इस मुकाबले में भारतीय क्रिकेट टीम ने शानदार खेल दिखाते हुए विरोधी टीम को 4 विकेट से मात दी। \n\nकप्तान ने मैच के बाद कहा कि दबाव के पलों में संयम बनाए रखना ही हमारी जीत की कुंजी रहा। दर्शकों से खचाखच भरे स्टेडियम में भारतीय प्रशंसकों ने जीत का जोरदार जश्न मनाया। मैन ऑफ द मैच का पुरस्कार शानदार अर्धशतक लगाने वाले युवा बल्लेबाज को दिया गया।`,
+        category: "खेल",
+        time: "2 घंटे पहले",
+        image: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&auto=format&fit=crop&q=80",
+        reads: "5.1k"
+      },
+      {
+        id: 5,
+        title: "नया 5G AI स्मार्टफोन लॉन्च: 200MP कैमरा और 15 मिनट में फुल चार्जिंग का दावा",
+        summary: "तकनीकी जगत में नया धमाका! आर्टिफिशियल इंटेलिजेंस से लैस स्मार्टफोन किफायती दाम में पेश।",
+        content: `टेक बाजार में आज नया फ्लैगशिप स्मार्टफोन पेश किया गया, जिसमें अगली पीढ़ी का AI प्रोसेसर और 200 मेगापिक्सल का अल्ट्रा-क्लियर कैमरा सेंसर दिया गया है। \n\nकंपनी का दावा है कि इसकी बैटरी मात्र 15 मिनट में 0 से 100 प्रतिशत तक चार्ज हो जाती है। इसके अलावा इसमें हिंदी समेत कई भारतीय भाषाओं में रियल-टाइम ट्रांसलेशन और वॉयस असिस्टेंट की सुविधा इनबिल्ट है।`,
+        category: "तकनीक",
+        time: "3 घंटे पहले",
+        image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&auto=format&fit=crop&q=80",
+        reads: "1.9k"
+      },
+      {
+        id: 6,
+        title: "सिनेमा जगत से बड़ी खबर: बहुप्रतीक्षित एक्शन फिल्म का ट्रेलर जारी, इंटरनेट पर छाया",
+        summary: "रिलीज होते ही ट्रेलर को मिले करोड़ों व्यूज, सोशल मीडिया पर दर्शकों की जबरदस्त प्रतिक्रिया।",
+        content: `सिनेमा प्रेमियों का इंतजार आखिरकार खत्म हुआ। साल की सबसे बड़ी एक्शन ड्रामा फिल्म का आधिकारिक ट्रेलर यूट्यूब और सोशल मीडिया पर रिलीज कर दिया गया है। \n\nट्रेलर में रोंगटे खड़े कर देने वाले एक्शन सीन्स और जानदार डायलॉग्स देखने को मिल रहे हैं। फिल्म अगले महीने देशभर के थिएटर्स में हिंदी, तमिल, तेलुगु और अन्य भाषाओं में रिलीज होगी।`,
+        category: "मनोरंजन",
+        time: "4 घंटे पहले",
+        image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&auto=format&fit=crop&q=80",
+        reads: "6.3k"
+      }
+    ];
+
+    // इन-मेमोरी स्टेट (State)
+    let savedBookmarks = [1]; // डिफ़ॉल्ट बुकमार्क
+    let currentFilteredCategory = 'सभी';
+    let currentStoryInModal = null;
+    let isSpeaking = false;
+
+    // पेज लोड होने पर इनिशियलाइज़ेशन
+    window.addEventListener('DOMContentLoaded', () => {
+      renderNewsList(newsData);
+      renderBookmarks();
+    });
+
+    // समाचार सूची को रेंडर करना
+    function renderNewsList(items) {
+      const container = document.getElementById('newsList');
+      if (items.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl p-6 border border-gray-200 dark:border-slate-700">
+            <div class="text-3xl mb-2">🔍</div>
+            <p class="text-sm font-bold text-gray-700 dark:text-gray-300">कोई समाचार नहीं मिला</p>
+            <p class="text-xs text-gray-500 mt-1">कृपया अन्य श्रेणी चुनें या सर्च बदलें।</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = items.map(item => {
+        const isBookmarked = savedBookmarks.includes(item.id);
+        return `
+          <div onclick="openStory(${item.id})" class="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-gray-200/70 dark:border-slate-700/80 flex gap-3 cursor-pointer hover:shadow-md transition active:scale-99">
+            <!-- थंबनेल -->
+            <div class="w-24 h-24 sm:w-28 sm:h-28 shrink-0 rounded-lg overflow-hidden bg-gray-200 dark:bg-slate-700 relative">
+              <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover" loading="lazy">
+              <span class="absolute top-1 left-1 bg-black/70 backdrop-blur-xs text-white text-[9px] px-1.5 py-0.5 rounded font-medium">
+                ${item.category}
+              </span>
+            </div>
+
+            <!-- कंटेंट विवरण -->
+            <div class="flex-1 flex flex-col justify-between">
+              <div>
+                <h3 class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 leading-snug line-clamp-2">
+                  ${item.title}
+                </h3>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 hidden sm:block">
+                  ${item.summary}
+                </p>
+              </div>
+
+              <!-- मेटा जानकारी एवं एक्शन -->
+              <div class="flex items-center justify-between mt-2 pt-1 border-t border-gray-100 dark:border-slate-700/40 text-[11px] text-gray-500 dark:text-gray-400">
+                <span class="flex items-center gap-1">
+                  ⏱️ ${item.time}
+                </span>
+                <div class="flex items-center gap-2">
+                  <button onclick="event.stopPropagation(); toggleBookmark(${item.id})" class="p-1 hover:text-brand-600 transition" aria-label="सहेजें">
+                    <svg class="w-4 h-4 ${isBookmarked ? 'fill-brand-600 text-brand-600' : ''}" fill="${isBookmarked ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                    </svg>
+                  </button>
+                  <button onclick="event.stopPropagation(); shareStory(${item.id})" class="p-1 hover:text-brand-600 transition" aria-label="शेयर करें">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // कैटेगरी फ़िल्टरिंग
+    function filterCategory(categoryName) {
+      currentFilteredCategory = categoryName;
+
+      // सभी बटन शैलियों को अपडेट करना
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        if (btn.innerText.includes(categoryName) || (categoryName === 'सभी' && btn.innerText === 'सभी')) {
+          btn.className = 'category-btn active shrink-0 px-3.5 py-1 text-xs font-semibold rounded-full bg-brand-600 text-white transition-all';
+        } else {
+          btn.className = 'category-btn shrink-0 px-3.5 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 transition-all';
+        }
+      });
+
+      if (categoryName === 'सभी') {
+        renderNewsList(newsData);
+      } else {
+        const filtered = newsData.filter(item => item.category.toLowerCase().includes(categoryName.toLowerCase()));
+        renderNewsList(filtered);
+      }
+    }
+
+    // खोज (Search) कार्यप्रणाली
+    function handleSearch(keyword) {
+      const trimmed = keyword.trim().toLowerCase();
+      if (!trimmed) {
+        filterCategory(currentFilteredCategory);
+        return;
+      }
+      const results = newsData.filter(item => 
+        item.title.toLowerCase().includes(trimmed) || 
+        item.summary.toLowerCase().includes(trimmed) ||
+        item.category.toLowerCase().includes(trimmed)
+      );
+      renderNewsList(results);
+    }
+
+    function toggleSearchBar() {
+      const container = document.getElementById('searchBarContainer');
+      container.classList.toggle('hidden');
+      if (!container.classList.contains('hidden')) {
+        document.getElementById('searchInput').focus();
+      }
+    }
+
+    // स्टोरी मोडल खोलना
+    function openStory(id) {
+      const story = newsData.find(item => item.id === id);
+      if (!story) return;
+      currentStoryInModal = story;
+
+      document.getElementById('modalTitle').innerText = story.title;
+      document.getElementById('modalCategory').innerText = story.category;
+      document.getElementById('modalTime').innerText = story.time;
+      document.getElementById('modalImage').src = story.image;
+      
+      // पैराग्राफ को विभाजित कर रेंडर करना
+      const paragraphs = story.content.split('\n\n').map(p => `<p>${p}</p>`).join('');
+      document.getElementById('modalContent').innerHTML = paragraphs;
+
+      // मोडल दिखाना
+      const modal = document.getElementById('articleModal');
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // मोडल बंद करना
+    function closeModal() {
+      if (isSpeaking && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        isSpeaking = false;
+      }
+      const modal = document.getElementById('articleModal');
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    // ऑडियो में समाचार सुनना (Text-To-Speech)
+    function toggleAudioRead() {
+      if (!('speechSynthesis' in window)) {
+        showToast('आपके ब्राउज़र में स्पीच फीचर समर्थित नहीं है');
+        return;
+      }
+
+      if (isSpeaking) {
+        window.speechSynthesis.cancel();
+        isSpeaking = false;
+        showToast('ऑडियो पढ़ना बंद किया गया');
+        return;
+      }
+
+      if (!currentStoryInModal) return;
+
+      const fullText = `${currentStoryInModal.title}। ${currentStoryInModal.content}`;
+      const utterance = new SpeechSynthesisUtterance(fullText);
+      utterance.lang = 'hi-IN'; // हिंदी आवाज़ का प्रयास
+      utterance.rate = 0.95;
+
+      utterance.onend = () => {
+        isSpeaking = false;
+      };
+      utterance.onerror = () => {
+        isSpeaking = false;
+      };
+
+      window.speechSynthesis.speak(utterance);
+      isSpeaking = true;
+      showToast('समाचार ऑडियो शुरू हुआ 🔊');
+    }
+
+    // बुकमार्क टॉगल
+    function toggleBookmark(id) {
+      const index = savedBookmarks.indexOf(id);
+      if (index > -1) {
+        savedBookmarks.splice(index, 1);
+        showToast('बुकमार्क हटा दिया गया');
+      } else {
+        savedBookmarks.push(id);
+        showToast('लेख सुरक्षित कर लिया गया 🔖');
+      }
+      renderNewsList(newsData);
+      renderBookmarks();
+    }
+
+    // बुकमार्क सूची रेंडर करना
+    function renderBookmarks() {
+      const container = document.getElementById('savedNewsList');
+      const bookmarkedItems = newsData.filter(item => savedBookmarks.includes(item.id));
+      
+      if (bookmarkedItems.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-10 bg-white dark:bg-slate-800 rounded-2xl p-6 border border-gray-200 dark:border-slate-700">
+            <div class="text-3xl mb-2">📑</div>
+            <p class="text-sm font-bold">कोई सुरक्षित समाचार नहीं है</p>
+            <p class="text-xs text-gray-500 mt-1">खबरों पर बुकमार्क आइकन दबाकर बाद में पढ़ने के लिए सहेजें।</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = bookmarkedItems.map(item => `
+        <div onclick="openStory(${item.id})" class="bg-white dark:bg-slate-800 rounded-xl p-3 shadow-sm border border-gray-200 dark:border-slate-700 flex gap-3 cursor-pointer">
+          <img src="${item.image}" alt="${item.title}" class="w-20 h-20 rounded-lg object-cover shrink-0">
+          <div class="flex-1 flex flex-col justify-between">
+            <h4 class="font-bold text-xs text-gray-900 dark:text-gray-100 line-clamp-2">${item.title}</h4>
+            <div class="flex items-center justify-between text-[11px] text-gray-500 mt-2">
+              <span>${item.category}</span>
+              <button onclick="event.stopPropagation(); toggleBookmark(${item.id})" class="text-red-600 hover:underline">हटाएं</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function clearBookmarks() {
+      savedBookmarks = [];
+      renderBookmarks();
+      renderNewsList(newsData);
+      showToast('सभी बुकमार्क हटा दिए गए');
+    }
+
+    // शेयरिंग कार्यप्रणाली (Share Story)
+    function shareStory(id) {
+      const story = newsData.find(item => item.id === id);
+      if (!story) return;
+
+      const shareText = `*${story.title}*\nपढ़ें पूरी खबर tejhind.com पर:\nhttps://tejhind.com/news/${story.id}`;
+      
+      // क्लिपबोर्ड कॉपी फॉलबैक (iframe सेफ)
+      const tempInput = document.createElement('textarea');
+      tempInput.value = shareText;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      try {
+        document.execCommand('copy');
+        showToast('लिंक कॉपी हो गया! अब दोस्तों को भेजें');
+      } catch (err) {
+        showToast('शेयर लिंक तैयार है: tejhind.com');
+      }
+      document.body.removeChild(tempInput);
+    }
+
+    function shareCurrentModalStory() {
+      if (currentStoryInModal) {
+        shareStory(currentStoryInModal.id);
+      }
+    }
+
+    function shareViaWhatsApp() {
+      if (!currentStoryInModal) return;
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(currentStoryInModal.title + ' - पढ़ें तेज हिन्द पर: https://tejhind.com')}`;
+      window.open(url, '_blank');
+    }
+
+    // नीचे के टैब बदलना (Switch Navigation Tabs)
+    function switchTab(tabKey) {
+      const tabs = ['tabHome', 'tabVideos', 'tabEPaper', 'tabSaved', 'tabMenu'];
+      tabs.forEach(t => document.getElementById(t).classList.add('hidden'));
+
+      // सभी नैव बटनों को निष्क्रिय करना
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.remove('text-brand-600', 'dark:text-brand-400');
+        btn.classList.add('text-gray-500', 'dark:text-gray-400');
+      });
+
+      if (tabKey === 'home') {
+        document.getElementById('tabHome').classList.remove('hidden');
+        document.getElementById('navHome').classList.add('text-brand-600', 'dark:text-brand-400');
+      } else if (tabKey === 'videos') {
+        document.getElementById('tabVideos').classList.remove('hidden');
+        document.getElementById('navVideos').classList.add('text-brand-600', 'dark:text-brand-400');
+      } else if (tabKey === 'epaper') {
+        document.getElementById('tabEPaper').classList.remove('hidden');
+        document.getElementById('navEPaper').classList.add('text-brand-600', 'dark:text-brand-400');
+      } else if (tabKey === 'saved') {
+        document.getElementById('tabSaved').classList.remove('hidden');
+        document.getElementById('navSaved').classList.add('text-brand-600', 'dark:text-brand-400');
+        renderBookmarks();
+      } else if (tabKey === 'menu') {
+        document.getElementById('tabMenu').classList.remove('hidden');
+        document.getElementById('navMenu').classList.add('text-brand-600', 'dark:text-brand-400');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // डार्क / लाइट मोड टॉगल
+    function toggleDarkMode() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      document.getElementById('themeIconSun').classList.toggle('hidden', !isDark);
+      document.getElementById('themeIconMoon').classList.toggle('hidden', isDark);
+      showToast(isDark ? 'डार्क मोड सक्रिय' : 'लाइट मोड सक्रिय');
+    }
+
+    // टेक्स्ट साइज़ बदलना
+    function setFontSize(size) {
+      const content = document.getElementById('modalContent');
+      if (size === 'sm') {
+        content.style.fontSize = '0.875rem';
+      } else if (size === 'md') {
+        content.style.fontSize = '1rem';
+      } else if (size === 'lg') {
+        content.style.fontSize = '1.15rem';
+      }
+      showToast(`फ़ॉन्ट साइज़ बदला गया`);
+    }
+
+    // लोड मोर सिमुलेशन
+    function loadMoreNews() {
+      showToast('और ताज़ा समाचार अपडेट किए जा रहे हैं...');
+    }
+
+    // PWA इंस्टॉल प्रॉम्प्ट
+    function installAppPrompt() {
+      showToast('तेज़ हिन्द ऐप को होमस्क्रीन पर जोड़ने के लिए ब्राउज़र मेन्यू में "Add to Home screen" चुनें।');
+    }
+
+    // कस्टम टोस्ट संदेश दिखाना (No alert() used)
+    let toastTimeout;
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.innerText = message;
+      toast.classList.remove('opacity-0', 'translate-y-3');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-3');
+      }, 2500);
+    }
+  </script>
+</body>
+</html>
+```
